@@ -16,6 +16,7 @@ int x = 0;
 int y = 0;
 int x_max = grid_size;
 int y_max = grid_size;
+String str;
 char venusmap[grid_size][grid_size] = {"s000000000",
                                        "0000000000",
                                        "0000000000",
@@ -27,17 +28,71 @@ char venusmap[grid_size][grid_size] = {"s000000000",
                                        "0000000000",
                                        "0000000000"}; 
 
-String receive_data() {
-  String message = "";
-  while (Serial.available() > 0) {
-    message = Serial.readString();
+// SIMULATION OF SENSOR DATA & MOVEMENT FUNCTION
+boolean receive_data(int t_stop) {
+  String message;
+  float t_start = millis();
+  
+  while ((millis()-t_start) < t_stop){
+    
+    while (Serial.available() > 0) {
+      message = Serial.readString();
+      str = message;
+      return true;
+    }
   }
-  return message;
+  return false;
+}
+
+int *sensor_data(){
+  int sensor[3] = {-1,-1,-1};
+  for(int i = 0; i<3 ; i++){
+    if(str[i] == '1'){
+      sensor[i] = 1;
+    }else{
+      sensor[i] = 0;
+    }
+  }
+  
+  Serial.print("SENSOR DATA: \t");
+  for(int i = 0; i<3 ; i++){
+    Serial.print(sensor[i]);
+    if(i == 2){
+      Serial.print("\n");
+    }
+  }
+  
+  return sensor;
+}
+
+void movement(char a){    // PRINT OUTPUT ALGORITHM
+  Serial.print("OUTPUT ALGORITHM:\t");
+  Serial.print(a);
+  Serial.print("\n");
+}
+
+void print_map(){         // PRINT MAP
+  Serial.print("\nMAP VISUALIZATION:\n\n");
+  for(int a = 0; a<grid_size ; a++){
+    Serial.print("----");
+  }
+  Serial.print("\n");
+  for(int i = 0; i<grid_size ; i++){
+    for(int j = 0; j<grid_size ; j++){
+      Serial.print(venusmap[i][j]);
+      Serial.print(" | ");
+    }
+    Serial.print("\n");
+    for(int a = 0; a<grid_size ; a++){
+      Serial.print("----");
+    }
+    Serial.print("\n");
+  }
 }
 
 
-
-bool check_map(char letter){
+// ALGORITHM
+bool check_map_forward(char letter){
   if (directionnow == 1) {
     y++;
     if(venusmap[x][y] == letter) {
@@ -72,12 +127,12 @@ bool check_map(char letter){
 
 char check_forward (int US, int cliff, int rock) {
   //obstacle check
-  if(check_map('p') || US == 1 || cliff == 1 || x>9){
+  if(check_map_forward('p') || US == 1 || cliff == 1 ){
 
     return 'o';
   }
   //rock check
-  if(check_map('r')){
+  if(check_map_forward('r')){
     return 'r';
   }else{
     return '1';
@@ -86,127 +141,40 @@ char check_forward (int US, int cliff, int rock) {
 }
 
 void update_map(char letter){
-  venusmap[][] = check_forward();
+//  venusmap[][] = check_forward();
 }
 
 char algo_0(int data[3]){
-  // INITIALIZE THE MAP BY FILLING IT WITH 0S 
-  // AS THE POSITIONS OF OBSTACLES AND ROCKS 
-  // ARE STILL UNKNOWN
-
+  // INITIALIZE THE MAP BY FILLING IT WITH 0S
+  
   US_check = data[0];
   IR_obst_check = data[1];
   IR_rock_check = data[2];
   
-  // MODES:
-  // 0 = FIND ROCK
-  // 1 = GET ROCK
-  // 2 = BACKTRACK
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'o'){ // change direction
     
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'r'){
     //change mode
   }
-  if(check_forward(US_check,IR_obst_check,IR_rock_check) == '1'){ // go for ward
+  if(check_forward(US_check,IR_obst_check,IR_rock_check) == '1'){ // go forward
     
   }
-    // US_check = 1 -> MOUNTAIN DETECTED
-    // IR_obst_check = 1 -> BLACK TAPE DETECTED
-    // IR_rock_check = 1 -> PATH DETECTED
-    if (US_check==0){
-      if ((IR_obst_check==0) && (IR_rock_check==0)){
-        right = 0;
-        Serial.print(directionnow);
-        Serial.print("\n");
-        check_forward();
-        update_position();
-        return 'f';
-    
-      } else if (IR_rock_check==1){
-        mode=1;
-        right = 0;
-        Serial.print(directionnow);
-        Serial.print("\n");
-        updatePos();
-        return 'f'; 
-        
-      } else if (IR_obst_check==1){
-        if (right==0){
-          right=1;
-          if (directionnow==2){
-            directionnow = -1;
-          }else if (directionnow=-2){
-            directionnow=1;
-          } else {
-            directionnow++;
-          }
-          Serial.print(directionnow);
-          Serial.print("\n");
-          return 'r';
-          }
-        else{
-          right=0;
-          directionnow=directionnow*-1;
-          Serial.print(directionnow);
-          Serial.print("\n");
-          return 'b';
-        }
-        
-      }
-      
-    } else {
-      if (right==0){
-          right=1;
-          if (directionnow==2){
-            directionnow = -1;
-          }else if (directionnow=-2){
-            directionnow=1;
-          } else {
-            directionnow++;
-          }
-          Serial.print(directionnow);
-          Serial.print("\n");
-          return 'r';
-          }
-      else{
-        right=0;
-        directionnow=directionnow*-1;
-        Serial.print(directionnow);
-        Serial.print("\n");
-        return 'b';
-        }
-    }
-  
 }
 
 void setup() {
   Serial.begin(9600);
+  print_map();
 }
 
-// MANUAL INPUT OF SENSOR DATA
 void loop() {
-  int sensor[3] = {-1,-1,-1};
-  String mess = receive_data();
-  for(int i = 0; i<3 && mess!="" ; i++){
-    if(mess[i] == '1'){
-      sensor[i] = 1;
-    }else{
-      sensor[i] = 0;
-    }
-  }
-  if(sensor[0] != -1 && sensor[1] != -1 && sensor[2] != -1){
-    Serial.print("SENSOR DATA: \t");
-    for(int i = 0; i<3 ; i++){
-      Serial.print(sensor[i]);
-      if(i == 2){
-        Serial.print("\n");
-      }
-    }
-    char out = algo(sensor);
-    Serial.print("OUTPUT ALGORITHM:\t");
-    Serial.print(out);
-    Serial.print("\n");
+  // MODES:
+  // 0 = FIND ROCK
+  // 1 = GET ROCK
+  // 2 = BACKTRACK
+  
+  if(receive_data(1000)){
+    movement(algo_0(sensor_data()));
   }
 
 }
