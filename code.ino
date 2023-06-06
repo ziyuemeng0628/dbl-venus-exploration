@@ -92,7 +92,7 @@ void print_map(){         // PRINT MAP
 
 
 // ALGORITHM
-bool check_map_forward(char letter){
+bool check_map_forward(char letter){ // This checks if the robot already travelled to a certain square
   if (directionnow == 1) {
     y++;
     if(venusmap[x][y] == letter) {
@@ -110,14 +110,12 @@ bool check_map_forward(char letter){
     x++;
     if(venusmap[x][y] == letter) {
       x--;
-      turn = 1;
       return true;
     }
   } else if (directionnow == -2) {
     x--;
     if(venusmap[x][y] == letter) {
-      x++;
-      turn = 1; 
+      x++; 
       return true;
     }
   }
