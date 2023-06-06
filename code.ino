@@ -150,13 +150,13 @@ char algo_0(int data[3]){
   IR_rock_check = data[2];
   
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'o'){ // change direction
-    
+    //right/left
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'r'){
-    //change mode
+    //change mode=1
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == '1'){ // go forward
-    
+    //turncount++
   }
 }
 
