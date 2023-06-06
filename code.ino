@@ -129,7 +129,7 @@ char check_forward (int US, int cliff, int rock) {
   //obstacle check
   if(check_map_forward('p') || US == 1 || cliff == 1 ){
 
-    return 'o';
+    return 'o'; //Does this mean that this redefines the 'p' values in the array to 'o' values?
   }
   //rock check
   if(check_map_forward('r')){
