@@ -1,25 +1,16 @@
 #define grid_size 10
 
 int mode = 0;
-int turn;
 boolean double_turn =0;
 int turncount=0;
-int m=-1;
-int grip=-1;
 int rocks_collect;
 int tot_rocks=5;
-int US_check=-1;
-int IR_obst_check=-1;
-int IR_rock_check=-1;
-bool right;
-bool left;
 int directionnow=-1;
 int x = 4;
 int y = 0;
 int x_max = grid_size;
 int y_max = grid_size;
 String str;
-int sensor[3];
 char venusmap[grid_size][grid_size] = {"0000s00000",
                                        "0000000000",
                                        "0000000000",
@@ -32,6 +23,7 @@ char venusmap[grid_size][grid_size] = {"0000s00000",
                                        "0000000000"}; 
 
 // SIMULATION OF SENSOR DATA & MOVEMENT FUNCTION
+int sensor[3];
 boolean receive_data(int t_stop) {
   String message;
   float t_start = millis();
@@ -225,9 +217,9 @@ void update_map(char letter){
 char algo_0(){
   // INITIALIZE THE MAP BY FILLING IT WITH 0S
   
-  US_check = sensor[0];
-  IR_obst_check = sensor[1];
-  IR_rock_check = sensor[2];
+  int US_check = sensor[0];
+  int IR_obst_check = sensor[1];
+  int IR_rock_check = sensor[2];
   
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'o'){ // change direction
     char check = algodirection();
