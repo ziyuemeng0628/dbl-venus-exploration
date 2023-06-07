@@ -137,6 +137,23 @@ char check_forward (int US, int cliff, int rock) {
   }
   
 }
+char dirchar(int dirrectionnow) {
+  switch (dirrectionnow) {
+    case 1:
+      return 'N';
+      break;
+    case -1:
+      return 'S';
+      break;
+    case 2:
+      return 'E';
+      break;
+    case -2:
+      return 'W';
+      break;
+  }
+}
+
 
 void update_map(char letter){
 //  venusmap[][] = check_forward();
