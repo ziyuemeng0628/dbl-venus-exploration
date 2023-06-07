@@ -5,8 +5,8 @@ boolean double_turn =0;
 int turncount=0;
 int rocks_collect;
 int tot_rocks=5;
-int directionnow=-1;
-int x = 4;
+int directionnow=-1; // N = 1; S = -1; E = 2; W = 2
+int x = 0;
 int y = 0;
 int x_max = grid_size;
 int y_max = grid_size;
@@ -67,23 +67,45 @@ void movement(char a){    // PRINT OUTPUT ALGORITHM
   Serial.print("DIRECTION:\t");
   Serial.print(dirchar(directionnow));
   Serial.print("\n");
-  Serial.print("TURNCOUNT:\t");
-  Serial.print(turncount);
+  Serial.print("POSITION:\t");
+  Serial.print("x = ");
+  Serial.print(x);
+  Serial.print("\t Y = ");
+  Serial.print(y);
   Serial.print("\n");
+}
+
+void set_start(){
+  for(int i = 0; i<grid_size ; i++){
+    for(int j = 0; j<grid_size ; j++){
+      if(venusmap[i][j] == 's'){
+        y = i;
+        x = j;
+      }
+    }
+  }
+  movement('0');
+  print_map();
 }
 
 void print_map(){         // PRINT MAP
   Serial.print("\nMAP VISUALIZATION:\n\n");
+  
+  Serial.print(" -");
   for(int a = 0; a<grid_size ; a++){
     Serial.print("----");
   }
   Serial.print("\n");
+  
   for(int i = 0; i<grid_size ; i++){
+    Serial.print(" | ");
     for(int j = 0; j<grid_size ; j++){
       Serial.print(venusmap[i][j]);
       Serial.print(" | ");
     }
     Serial.print("\n");
+    
+    Serial.print(" -");
     for(int a = 0; a<grid_size ; a++){
       Serial.print("----");
     }
@@ -91,38 +113,110 @@ void print_map(){         // PRINT MAP
   }
 }
 
+// Map Functions
 
-// ALGORITHM
-bool check_map_forward(char letter){ // This checks if the robot already travelled to a certain square
-  if (directionnow == 1) {
-    y++;
-    if(venusmap[x][y] == letter) {
-      y--;
-      return true;
-    }
-  } else if (directionnow == -1) {
-    y--;
-    if(venusmap[x][y] == letter) {
-      y++;
-      turn = 1;
-      return true;
-    }
-  } else if (directionnow == 2) {
-    x++;
-    if(venusmap[x][y] == letter) {
-      x--;
-      return true;
-    }
-  } else if (directionnow == -2) {
-    x--;
-    if(venusmap[x][y] == letter) {
-      x++; 
-      return true;
-    }
+void update_map(char direc, char a, int increment){
+  if(direc=='0'){
+    direc = dirchar(directionnow);
   }
-  
-  return false;
+  switch(direc){
+    default:
+      break;
+    case 'N':
+      venusmap[y-increment][x] = a;
+      break;
+    case 'S':
+      venusmap[y+increment][x] = a;
+      break;
+    case 'E':
+      venusmap[y][x+increment] = a;
+      break;
+    case 'W':
+      venusmap[y][x-increment] = a;
+      break;
+  }
 }
+
+void update_pos(char direc, int increment){
+  if(direc=='0'){
+    direc = dirchar(directionnow);
+  }
+  switch(direc){
+    default:
+      break;
+    case 'N':
+      y = y-increment;
+      break;
+    case 'S':
+      y = y+increment;
+      break;
+    case 'E':
+      x = x+increment;
+      break;
+    case 'W':
+      x = x-increment;
+      break;
+  }
+}
+
+bool check_map(char direc, char letter, int increment){ // This checks if the robot already travelled to a certain square
+  if(direc=='0'){
+    direc = dirchar(directionnow);
+  }  
+  switch(direc){
+    default:
+      return false;
+      break;
+    case 'N':
+      if(venusmap[y-increment][x] == letter) {
+        return true;
+      }else{
+        return false;
+      }      
+      break;
+    case 'S':
+      if(venusmap[y+increment][x] == letter) {
+        return true;
+      }else{
+        return false;
+      }
+      break;
+    case 'E':
+      if(venusmap[y][x+increment] == letter) {
+        return true;
+      }else{
+        return false;
+      }
+      break;
+    case 'W':
+      if(venusmap[y][x+increment] == letter) {
+        return true;
+      }else{
+        return false;
+      }
+      break;
+  }
+}
+
+// ALGORITHM Functions
+
+char dirchar(int dirrectionnow) {
+  switch (dirrectionnow) {
+    case 1:
+      return 'N';
+      break;
+    case -1:
+      return 'S';
+      break;
+    case 2:
+      return 'E';
+      break;
+    case -2:
+      return 'W';
+      break;
+  }
+}
+
 //even or odd checking 
 int turncheck(int turncount){
   if (turncount%2==0){
@@ -151,7 +245,6 @@ char algodirection(){
       if(directionnow==-1){
         directionnow = -2;             
       }
-      right=true;
       return 'r';//note: r is also rock
       
     }else{
@@ -168,7 +261,6 @@ char algodirection(){
       else if (directionnow==-1){
         directionnow=2;
       }
-      left=true;
       return 'l';//note: r is also rock
       }
     
@@ -179,9 +271,13 @@ char algodirection(){
       return 'b';
   }
 }
-char check_forward (int US, int cliff, int rock) {
+
+char check_forward(int US, int cliff, int rock) {
   //obstacle checkv
-  if( US == 1 || cliff == 1 ){
+  if(check_map('0','p',1) || US == 1 || cliff == 1 ){
+    if(check_map('0','p',1) == false){
+      update_map('0','o',1);
+    }
     return 'o'; //Does this mean that this redefines the 'p' values in the array to 'o' values?
   }
   //rock check
@@ -192,30 +288,8 @@ char check_forward (int US, int cliff, int rock) {
   }
   
 }
-char dirchar(int dirrectionnow) {
-  switch (dirrectionnow) {
-    case 1:
-      return 'N';
-      break;
-    case -1:
-      return 'S';
-      break;
-    case 2:
-      return 'E';
-      break;
-    case -2:
-      return 'W';
-      break;
-  }
-}
-
-
-void update_map(char letter){
-//  venusmap[][] = check_forward();
-}
 
 char algo_0(){
-  // INITIALIZE THE MAP BY FILLING IT WITH 0S
   
   int US_check = sensor[0];
   int IR_obst_check = sensor[1];
@@ -227,25 +301,40 @@ char algo_0(){
     if (check!='b'){
       turncount++;
     }
+    
     return check;
-    
-    
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'r'){
     //change mode=1
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == '0'){ // go forward
     double_turn=false;
+    if(check_map('0','s',0) == false){
+      update_map('0','p',0);
+    }
+    update_map('0','x',1);
+    update_pos('0',1);
     return 'f';
-    
   }
 }
 
 void setup() {
   Serial.begin(9600);
-  print_map();
+  set_start();
 }
 
+void loop() {
+  // MODES:
+  // 0 = FIND ROCK
+  // 1 = GET ROCK
+  // 2 = BACKTRACK
+  
+  if(receive_data(1000)){
+    sensor_data();
+    movement(algo_0());
+    print_map();
+  }
+}
 void loop() {
   // MODES:
   // 0 = FIND ROCK
