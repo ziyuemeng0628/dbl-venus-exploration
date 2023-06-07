@@ -1,0 +1,42 @@
+#include <Servo.h>
+int sensor = 2;
+
+Servo servo_grap;    // 10
+Servo servo_sensor;  // 11
+Servo servo_right;   // 12
+Servo servo_left;    // 13
+
+void goForward(int time) {
+  servo_right.attach(12);
+  servo_left.attach(13);
+  servo_right.write(0);
+  servo_left.write(180);
+  delay(time);
+}
+void stopMoving() {
+  servo_right.detach();
+  servo_left.detach();
+}
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(sensor, INPUT);
+  pinMode(11,OUTPUT);
+  servo_right.attach(12);
+  servo_left.attach(13);
+  Serial.begin(9600);
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  while(!digitalRead(sensor)){
+    goForward(500);
+    stopMoving();
+    Serial.println(1);
+  }
+  digitalWrite(11, HIGH);
+  while(1){
+    Serial.println(2);
+  }
+}
