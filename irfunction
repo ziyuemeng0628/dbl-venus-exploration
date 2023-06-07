@@ -1,0 +1,9 @@
+int detecthole(void){
+  return digitalRead(holeIR);
+  //outputs a 1 if the sensor detects a cliff or the border, outputs a 0 otherwise
+}
+
+int detectobject(void){
+  return !digitalRead(objectIR);
+  //outputs a 1 if the sensor detects a object (for example a rock, the lab or the wall), outputs a 0 if no object within range
+}
