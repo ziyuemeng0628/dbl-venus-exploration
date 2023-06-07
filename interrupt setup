@@ -1,0 +1,7 @@
+int irpin=2;
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(irpin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(irpin),interuptfunction, RISING);
+}
