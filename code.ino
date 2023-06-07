@@ -2,6 +2,7 @@
 
 int mode = 0;
 int turn;
+boolean double_turn =0;
 int turncount=0;
 int m=-1;
 int grip=-1;
@@ -74,6 +75,9 @@ void movement(char a){    // PRINT OUTPUT ALGORITHM
   Serial.print("DIRECTION:\t");
   Serial.print(dirchar(directionnow));
   Serial.print("\n");
+  Serial.print("TURNCOUNT:\t");
+  Serial.print(turncount);
+  Serial.print("\n");
 }
 
 void print_map(){         // PRINT MAP
@@ -140,30 +144,26 @@ int turncheck(int turncount){
 
 //changing direction and outputting turn left,right,180
 char algodirection(){
-  if (turncheck(turncount)==1){\
+  if(double_turn == false){
+    if (turncheck(turncount)==1){\
   
-    if (right==false){
       if (directionnow==2){
         directionnow=-1;
-        }
-      else if (directionnow==-2){
+      }
+      if(directionnow==-2){
         directionnow=1;
-        }
-      else {
-        directionnow+=1;             
-        }
+      }
+      if(directionnow==1){
+        directionnow = 2;             
+      }
+      if(directionnow==-1){
+        directionnow = -2;             
+      }
       right=true;
       return 'r';//note: r is also rock
-      }
-    else if (right==true){
-      right=false;
-      directionnow=directionnow*-1;
-      return 'b';
-    }
+      
+    }else{
     
-  }else{
-    
-    if (left==false){
       if (directionnow==2){
         directionnow=1;
         }
@@ -171,28 +171,23 @@ char algodirection(){
         directionnow=-1;
         }
       else if(directionnow==1){
-        directionnow==-2;             
+        directionnow=-2;             
         }
       else if (directionnow==-1){
-        directionnow==2;
+        directionnow=2;
       }
       left=true;
       return 'l';//note: r is also rock
       }
-    else if(left==2){
-      left=false;
+    
+    
+  }else{
+      double_turn=false;
       directionnow=directionnow*-1;
       return 'b';
-    }
   }
 }
 char check_forward (int US, int cliff, int rock) {
-  
-  Serial.print(US);
-  Serial.print(cliff);
-  Serial.print(rock);
-  
-  Serial.print("\n");
   //obstacle checkv
   if( US == 1 || cliff == 1 ){
     return 'o'; //Does this mean that this redefines the 'p' values in the array to 'o' values?
@@ -235,14 +230,22 @@ char algo_0(){
   IR_rock_check = sensor[2];
   
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'o'){ // change direction
-    return algodirection();
+    char check = algodirection();
+    double_turn=true;
+    if (check!='b'){
+      turncount++;
+    }
+    return check;
+    
+    
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'r'){
     //change mode=1
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == '0'){ // go forward
-    turncount++;
+    double_turn=false;
     return 'f';
+    
   }
 }
 
