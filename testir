@@ -1,0 +1,19 @@
+int irpin=2;
+int pin2=3;
+
+void setup() {
+  // put your setup code here, to run once:
+ pinMode(irpin,INPUT);
+ pinMode(pin2,INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  int val=digitalRead(irpin);
+  int val2=!digitalRead(pin2);
+  Serial.print(val);
+  Serial.print("  ");
+  Serial.println(val2);
+  delay(100);
+}
