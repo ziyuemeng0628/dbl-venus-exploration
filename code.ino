@@ -10,14 +10,16 @@ int tot_rocks=5;
 int US_check=-1;
 int IR_obst_check=-1;
 int IR_rock_check=-1;
-int right=0;
-int directionnow=1;
-int x = 0;
+bool right;
+bool left;
+int directionnow=-1;
+int x = 4;
 int y = 0;
 int x_max = grid_size;
 int y_max = grid_size;
 String str;
-char venusmap[grid_size][grid_size] = {"s000000000",
+int sensor[3];
+char venusmap[grid_size][grid_size] = {"0000s00000",
                                        "0000000000",
                                        "0000000000",
                                        "0000000000",
@@ -44,8 +46,10 @@ boolean receive_data(int t_stop) {
   return false;
 }
 
-int *sensor_data(){
-  int sensor[3] = {-1,-1,-1};
+void sensor_data(){
+  sensor[0] = -1;
+  sensor[1] = -1;
+  sensor[2] = -1;
   for(int i = 0; i<3 ; i++){
     if(str[i] == '1'){
       sensor[i] = 1;
@@ -61,13 +65,14 @@ int *sensor_data(){
       Serial.print("\n");
     }
   }
-  
-  return sensor;
 }
 
 void movement(char a){    // PRINT OUTPUT ALGORITHM
   Serial.print("OUTPUT ALGORITHM:\t");
   Serial.print(a);
+  Serial.print("\n");
+  Serial.print("DIRECTION:\t");
+  Serial.print(dirchar(directionnow));
   Serial.print("\n");
 }
 
@@ -122,18 +127,81 @@ bool check_map_forward(char letter){ // This checks if the robot already travell
   
   return false;
 }
+//even or odd checking 
+int turncheck(int turncount){
+  if (turncount%2==0){
+    return 0;
+  }else{
+    //turn: right turn, right increment=1
+    return 1;
+  }
+}
 
+
+//changing direction and outputting turn left,right,180
+char algodirection(){
+  if (turncheck(turncount)==1){\
+  
+    if (right==false){
+      if (directionnow==2){
+        directionnow=-1;
+        }
+      else if (directionnow==-2){
+        directionnow=1;
+        }
+      else {
+        directionnow+=1;             
+        }
+      right=true;
+      return 'r';//note: r is also rock
+      }
+    else if (right==true){
+      right=false;
+      directionnow=directionnow*-1;
+      return 'b';
+    }
+    
+  }else{
+    
+    if (left==false){
+      if (directionnow==2){
+        directionnow=1;
+        }
+      else if (directionnow==-2){
+        directionnow=-1;
+        }
+      else if(directionnow==1){
+        directionnow==-2;             
+        }
+      else if (directionnow==-1){
+        directionnow==2;
+      }
+      left=true;
+      return 'l';//note: r is also rock
+      }
+    else if(left==2){
+      left=false;
+      directionnow=directionnow*-1;
+      return 'b';
+    }
+  }
+}
 char check_forward (int US, int cliff, int rock) {
-  //obstacle check
-  if(check_map_forward('p') || US == 1 || cliff == 1 ){
-
+  
+  Serial.print(US);
+  Serial.print(cliff);
+  Serial.print(rock);
+  
+  Serial.print("\n");
+  //obstacle checkv
+  if( US == 1 || cliff == 1 ){
     return 'o'; //Does this mean that this redefines the 'p' values in the array to 'o' values?
   }
   //rock check
-  if(check_map_forward('r')){
+  if(rock == 1){
     return 'r';
   }else{
-    return '1';
+    return '0';
   }
   
 }
@@ -159,21 +227,22 @@ void update_map(char letter){
 //  venusmap[][] = check_forward();
 }
 
-char algo_0(int data[3]){
+char algo_0(){
   // INITIALIZE THE MAP BY FILLING IT WITH 0S
   
-  US_check = data[0];
-  IR_obst_check = data[1];
-  IR_rock_check = data[2];
+  US_check = sensor[0];
+  IR_obst_check = sensor[1];
+  IR_rock_check = sensor[2];
   
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'o'){ // change direction
-    //right/left
+    return algodirection();
   }
   if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'r'){
     //change mode=1
   }
-  if(check_forward(US_check,IR_obst_check,IR_rock_check) == '1'){ // go forward
-    //turncount++
+  if(check_forward(US_check,IR_obst_check,IR_rock_check) == '0'){ // go forward
+    turncount++;
+    return 'f';
   }
 }
 
@@ -189,7 +258,7 @@ void loop() {
   // 2 = BACKTRACK
   
   if(receive_data(1000)){
-    movement(algo_0(sensor_data()));
+    sensor_data();
+    movement(algo_0());
   }
-
 }
