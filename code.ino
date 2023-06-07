@@ -1,4 +1,4 @@
-#define grid_size 10
+
 
 int mode = 0;
 int turn;
