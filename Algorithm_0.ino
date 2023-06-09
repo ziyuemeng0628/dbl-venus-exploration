@@ -1,6 +1,3 @@
-#define grid_size 10
-
-int mode = 0;
 boolean double_turn =0;
 int turncount=0;
 int rocks_collect;
@@ -23,7 +20,8 @@ char venusmap[grid_size][grid_size] = {"0000s00000",
                                        "0000000000"}; 
 
 // SIMULATION OF SENSOR DATA & MOVEMENT FUNCTION
-int sensor[3];
+int sensor[3] = {0,0,0};
+boolean init_2 = true;
 boolean receive_data(int t_stop) {
   String message;
   float t_start = millis();
@@ -282,6 +280,7 @@ char check_forward(int US, int cliff, int rock) {
   }
   //rock check
   if(rock == 1){
+    mode = 1;
     return 'r';
   }else{
     return '0';
@@ -318,6 +317,40 @@ char algo_0(){
   }
 }
 
+char algo_2(){
+  if(init_2 == true){
+    init_2 = false;
+    directionnow=directionnow*-1;
+    return 'b';
+  }
+  if(check_map('0','s',1)){    
+    double_turn=false;
+    update_map('0','p',0);
+    update_pos('0',1);
+    
+    mode = 0;
+    
+    return 'f';
+  }
+  if(check_map('0','p',1) == false && check_map('0','s',1) == false){ // change direction
+    char check = algodirection();
+    double_turn=true;
+    if (check!='b'){
+      turncount++;
+    }
+    
+    return check;
+  }
+  if(check_map('0','p',1)){ // go forward
+    double_turn=false;
+    update_map('0','p',0);
+    update_map('0','x',1);
+    update_pos('0',1);
+    
+    return 'f';
+  }
+}
+
 void setup() {
   Serial.begin(9600);
   set_start();
@@ -329,20 +362,10 @@ void loop() {
   // 1 = GET ROCK
   // 2 = BACKTRACK
   
-  if(receive_data(1000)){
-    sensor_data();
-    movement(algo_0());
+//  receive_data(100)
+  delay(1000);
+  if(mode == 0){
+    movement(algo_2());
     print_map();
-  }
-}
-void loop() {
-  // MODES:
-  // 0 = FIND ROCK
-  // 1 = GET ROCK
-  // 2 = BACKTRACK
-  
-  if(receive_data(1000)){
-    sensor_data();
-    movement(algo_0());
   }
 }
