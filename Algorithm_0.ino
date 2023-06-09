@@ -1,3 +1,6 @@
+#define grid_size 10
+
+int mode = 2;
 boolean double_turn =0;
 int turncount=0;
 int rocks_collect;
