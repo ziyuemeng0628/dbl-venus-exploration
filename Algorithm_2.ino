@@ -232,44 +232,55 @@ int turncheck(int turncount){
 //changing direction and outputting turn left,right,180
 char algodirection(){
   if(double_turn == false){
-    if (turncheck(turncount)==1){\
-  
+    if (turncheck(turncount)==1){
       if (directionnow==2){
         directionnow=-1;
+        double_turn=true;
+        return 'r';//note: r is also rock
       }
       if(directionnow==-2){
         directionnow=1;
+        double_turn=true;
+        return 'r';//note: r is also rock
       }
       if(directionnow==1){
-        directionnow = 2;             
+        directionnow = 2; 
+        double_turn=true;
+        return 'r';//note: r is also rock
       }
       if(directionnow==-1){
-        directionnow = -2;             
-      }
-      return 'r';//note: r is also rock
+        directionnow = -2; 
+        double_turn=true;
+        return 'r';//note: r is also rock
+      }    
       
     }else{
     
       if (directionnow==2){
         directionnow=1;
+        double_turn=true;
+        return 'l';//note: r is also rock
         }
       else if (directionnow==-2){
         directionnow=-1;
+        double_turn=true;
+        return 'l';//note: r is also rock
         }
       else if(directionnow==1){
-        directionnow=-2;             
+        directionnow=-2;   
+        double_turn=true;
+        return 'l';//note: r is also rock          
         }
       else if (directionnow==-1){
         directionnow=2;
+        double_turn=true;
+        return 'l';//note: r is also rock
       }
-      return 'l';//note: r is also rock
-      }
-    
-    
+     }
   }else{
-      double_turn=false;
-      directionnow=directionnow*-1;
-      return 'b';
+    double_turn=false;
+    directionnow=directionnow*-1;
+    return 'b';
   }
 }
 
