@@ -7,7 +7,7 @@
 
 //variables for communication
 String str_message;
-boolean xbee_connected;
+boolean xbee_connected = false;
 boolean xbee_master = false;
 
 //Function for receiving string message from serial
