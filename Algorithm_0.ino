@@ -1,8 +1,11 @@
-#define grid_size 10
+#include <Arduino.h>
+#define grid_size 12
 
-int mode = 2;
-boolean double_turn =0;
-int turncount=0;
+int mode = 0;
+int loop_count = 0;
+
+int double_turn = 0;
+int turncount = 0;
 int rocks_collect;
 int tot_rocks=5;
 int directionnow=-1; // N = 1; S = -1; E = 2; W = 2
@@ -11,20 +14,23 @@ int y = 0;
 int x_max = grid_size;
 int y_max = grid_size;
 String str;
-char venusmap[grid_size][grid_size] = {"0000s00000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000",
-                                       "0000000000"}; 
+String venusmap[grid_size] = {  "oooooooooooo",
+                                "o    s     o",
+                                "o          o",
+                                "o    o     o",
+                                "o          o",
+                                "o         oo",
+                                "o          o",
+                                "o          o",
+                                "oo     or  o",
+                                "o          o",
+                                "o          o",
+                                "oooooooooooo"}; 
 
 // SIMULATION OF SENSOR DATA & MOVEMENT FUNCTION
 int sensor[3] = {0,0,0};
-boolean init_2 = true;
+boolean init_algo2 = true;
+
 boolean receive_data(int t_stop) {
   String message;
   float t_start = millis();
@@ -61,18 +67,74 @@ void sensor_data(){
   }
 }
 
+char dirchar(int dirrectionnow) {
+  switch (dirrectionnow) {
+    default:
+      return '\0';
+      break;
+    case 1:
+      return 'N';
+      break;
+    case -1:
+      return 'S';
+      break;
+    case 2:
+      return 'E';
+      break;
+    case -2:
+      return 'W';
+      break;
+  }
+}
+
 void movement(char a){    // PRINT OUTPUT ALGORITHM
-  Serial.print("OUTPUT ALGORITHM:\t");
-  Serial.print(a);
-  Serial.print("\n");
-  Serial.print("DIRECTION:\t");
-  Serial.print(dirchar(directionnow));
-  Serial.print("\n");
-  Serial.print("POSITION:\t");
+
+  Serial.print("\n\n\n---------------------------------------\n");
+  Serial.print("POSITION:   ");
   Serial.print("x = ");
   Serial.print(x);
-  Serial.print("\t Y = ");
+  Serial.print("   Y = ");
   Serial.print(y);
+  Serial.print("   DIREC: ");
+  Serial.print(dirchar(directionnow));
+  Serial.print("\n");
+
+  Serial.print("OUTPUT ALGORITHM:         ");
+  Serial.print(a);
+  Serial.print("\n");
+
+  Serial.print("operation nr: ");
+  Serial.print(loop_count);
+  Serial.print("\t\tturncount: ");
+  Serial.print(turncount);
+  Serial.print("\n");
+  Serial.print("---------------------------------------\n");
+}
+
+void print_map(){         // PRINT MAP
+ 
+  Serial.print(" _");
+  for(int a = 0; a<grid_size-2 ; a++){
+    Serial.print("____");
+  }
+  Serial.print("\n");
+  
+  for(int i = 1; i<grid_size-1 ; i++){
+    Serial.print(" | ");
+    for(int j = 1; j<grid_size-1 ; j++){
+      Serial.print(venusmap[i][j]);
+      Serial.print(" | ");
+    }
+    Serial.print("\n");
+    
+    Serial.print(" _");
+    for(int a = 0; a<grid_size-2 ; a++){
+      Serial.print("____");
+    }
+    Serial.print("\n");
+  }
+  Serial.print("\n");
+  Serial.print("\n");
   Serial.print("\n");
 }
 
@@ -87,31 +149,6 @@ void set_start(){
   }
   movement('0');
   print_map();
-}
-
-void print_map(){         // PRINT MAP
-  Serial.print("\nMAP VISUALIZATION:\n\n");
-  
-  Serial.print(" -");
-  for(int a = 0; a<grid_size ; a++){
-    Serial.print("----");
-  }
-  Serial.print("\n");
-  
-  for(int i = 0; i<grid_size ; i++){
-    Serial.print(" | ");
-    for(int j = 0; j<grid_size ; j++){
-      Serial.print(venusmap[i][j]);
-      Serial.print(" | ");
-    }
-    Serial.print("\n");
-    
-    Serial.print(" -");
-    for(int a = 0; a<grid_size ; a++){
-      Serial.print("----");
-    }
-    Serial.print("\n");
-  }
 }
 
 // Map Functions
@@ -160,171 +197,172 @@ void update_pos(char direc, int increment){
   }
 }
 
-bool check_map(char direc, char letter, int increment){ // This checks if the robot already travelled to a certain square
+char check_map(char direc, int increment){ // This checks if the robot already travelled to a certain square
   if(direc=='0'){
     direc = dirchar(directionnow);
   }  
+  
   switch(direc){
     default:
       return false;
       break;
     case 'N':
-      if(venusmap[y-increment][x] == letter) {
-        return true;
-      }else{
-        return false;
-      }      
+      return venusmap[y-increment][x];
       break;
     case 'S':
-      if(venusmap[y+increment][x] == letter) {
-        return true;
-      }else{
-        return false;
-      }
+      return venusmap[y+increment][x];
       break;
     case 'E':
-      if(venusmap[y][x+increment] == letter) {
-        return true;
-      }else{
-        return false;
-      }
+      return venusmap[y][x+increment];
       break;
     case 'W':
-      if(venusmap[y][x+increment] == letter) {
-        return true;
-      }else{
-        return false;
-      }
+      return venusmap[y][x-increment];
       break;
   }
 }
 
 // ALGORITHM Functions
 
-char dirchar(int dirrectionnow) {
-  switch (dirrectionnow) {
-    case 1:
-      return 'N';
-      break;
-    case -1:
-      return 'S';
-      break;
-    case 2:
-      return 'E';
-      break;
-    case -2:
-      return 'W';
-      break;
-  }
-}
-
 //even or odd checking 
-int turncheck(int turncount){
+boolean turncheck(int turncount){
   if (turncount%2==0){
-    return 0;
+    return false;
   }else{
     //turn: right turn, right increment=1
-    return 1;
+    return true;
   }
 }
 
 
 //changing direction and outputting turn left,right,180
 char algodirection(){
-  if(double_turn == false){
-    if (turncheck(turncount)==1){
-      if (directionnow==2){
-        directionnow=-1;
-        double_turn=true;
-        return 'r';//note: r is also rock
-      }
-      if(directionnow==-2){
-        directionnow=1;
-        double_turn=true;
-        return 'r';//note: r is also rock
-      }
-      if(directionnow==1){
-        directionnow = 2; 
-        double_turn=true;
-        return 'r';//note: r is also rock
-      }
-      if(directionnow==-1){
-        directionnow = -2; 
-        double_turn=true;
-        return 'r';//note: r is also rock
-      }    
-      
-    }else{
-    
-      if (directionnow==2){
-        directionnow=1;
-        double_turn=true;
-        return 'l';//note: r is also rock
+
+  if(double_turn == 0){
+    double_turn++;
+    switch(dirchar(directionnow)){
+      default:
+        return '\0';
+        break;
+      case 'N':
+        if(turncheck(turncount)){
+          directionnow = 2;
+          return 'r';
+        }else{
+          directionnow = -2;
+          return 'l';
         }
-      else if (directionnow==-2){
-        directionnow=-1;
-        double_turn=true;
-        return 'l';//note: r is also rock
+        break;
+      case 'S':
+        if(turncheck(turncount)){
+          directionnow = -2;
+          return 'r';
+        }else{
+          directionnow = 2;
+          return 'l';
         }
-      else if(directionnow==1){
-        directionnow=-2;   
-        double_turn=true;
-        return 'l';//note: r is also rock          
+        break;
+      case 'E':
+        if(turncheck(turncount)){
+          directionnow = -1;
+          return 'r';
+        }else{
+          directionnow = 1;
+          return 'l';
         }
-      else if (directionnow==-1){
-        directionnow=2;
-        double_turn=true;
-        return 'l';//note: r is also rock
-      }
-     }
-    
-    
-  }else{
-     
-      double_turn=false;
-      directionnow=directionnow*-1;
-      return 'b';
-  }
-}
-char check_forward(int US, int cliff, int rock) {
-  //obstacle checkv
-  if(check_map('0','p',1) || US == 1 || cliff == 1 ){
-    if(check_map('0','p',1) == false){
-      update_map('0','o',1);
+        break;
+      case 'W':
+        if(turncheck(turncount)){
+          directionnow = 1;
+          return 'r';
+        }else{
+          directionnow = -1;
+          return 'l';
+        }
+        break;
     }
-    return 'o'; //Does this mean that this redefines the 'p' values in the array to 'o' values?
+  }else if(double_turn == 1){
+    
+    double_turn++;
+    directionnow=directionnow*-1;
+    return 'b';
+  }else if(double_turn == 2){
+
+    double_turn=0;
+    switch(dirchar(directionnow)){
+      default:
+        return '\0';
+        break;
+      case 'N':
+        if(check_map('W',1) == '0'){
+          directionnow = 2;
+          return 'r';
+        }else if(check_map('E',1) == '0'){
+          directionnow = -2;
+          return 'l';
+        }
+        break;
+      case 'S':
+        if(check_map('E',1) == '0'){
+          directionnow = -2;
+          return 'r';
+        }else if(check_map('W',1) == '0'){
+          directionnow = 2;
+          return 'l';
+        }
+        break;
+      case 'E':
+        if(check_map('N',1) == '0'){
+          directionnow = -1;
+          return 'r';
+        }else if(check_map('S',1) == '0'){
+          directionnow = 1;
+          return 'l';
+        }
+        break;
+      case 'W':
+        if(check_map('S',1) == '0'){
+          directionnow = 1;
+          return 'r';
+        }else if(check_map('N',1) == '0'){
+          directionnow = -1;
+          return 'l';
+        }
+        break;
+    }
   }
-  //rock check
-  if(rock == 1){
-    mode = 1;
-    return 'r';
-  }else{
-    return '0';
-  }
-  
+  return '\0';
 }
 
 char algo_0(){
   
-  int US_check = sensor[0];
-  int IR_obst_check = sensor[1];
-  int IR_rock_check = sensor[2];
+  int US_check = 0;
+  int IR_obst_check = 0;
+  int IR_rock_check = 0;
+
+  char object = check_map('0',1);
+
   
-  if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'o'){ // change direction
-    char check = algodirection();
-    double_turn=true;
-    if (check!='b'){
-      turncount++;
+  if(object == 'o' || object == 'p' || US_check == 1 || IR_obst_check == 1){ // change direction
+    if(object != 'p'){
+      update_map('0','o',1);
     }
     
-    return check;
-  }
-  if(check_forward(US_check,IR_obst_check,IR_rock_check) == 'r'){
-    //change mode=1
-  }
-  if(check_forward(US_check,IR_obst_check,IR_rock_check) == '0'){ // go forward
-    double_turn=false;
-    if(check_map('0','s',0) == false){
+    char turn_direct = algodirection();
+    // if(turn_direct != 'b'){
+      turncount++;
+    // }
+
+    return turn_direct;
+  }else if(object == 'r' || IR_rock_check == 1){
+    
+    Serial.print("\n\n\n\n-----------------------------\nRock Found!!!\nReturn to base sequence started!!!\n-----------------------------\n");
+    mode = 1;
+    movement('\0');
+    print_map();
+    return '\0';
+  }else{ // go forward
+    double_turn=0;
+    if(check_map('0',0) != 's'){
       update_map('0','p',0);
     }
     update_map('0','x',1);
@@ -334,12 +372,15 @@ char algo_0(){
 }
 
 char algo_2(){
-  if(init_2 == true){
-    init_2 = false;
+  if(init_algo2 == true){
+    init_algo2 = false;
     directionnow=directionnow*-1;
     return 'b';
   }
-  if(check_map('0','s',1)){    
+
+  char object = check_map('0',1);
+
+  if(object == 's'){    
     double_turn=false;
     update_map('0','p',0);
     update_pos('0',1);
@@ -347,28 +388,23 @@ char algo_2(){
     mode = 0;
     
     return 'f';
-  }
-  if(check_map('0','p',1) == false && check_map('0','s',1) == false){ // change direction
-    char check = algodirection();
-    double_turn=true;
-    if (check!='b'){
-      turncount++;
-    }
-    
-    return check;
-  }
-  if(check_map('0','p',1)){ // go forward
+  }else if(object == 'p'){ // go forward
     double_turn=false;
     update_map('0','p',0);
     update_map('0','x',1);
     update_pos('0',1);
     
     return 'f';
+  }else{
+    char turn_direct = algodirection();
+    
+    return turn_direct;
   }
 }
 
 void setup() {
   Serial.begin(9600);
+
   set_start();
 }
 
@@ -379,9 +415,19 @@ void loop() {
   // 2 = BACKTRACK
   
 //  receive_data(100)
-  delay(1000);
+  // delay(5000);
+  
   if(mode == 0){
-    movement(algo_2());
-    print_map();
+    char algo_out = algo_0();
+    // movement(algo_out);
+
+    if(loop_count>75){
+        movement(algo_out);
+        print_map();
+      
+      mode = 1;
+    }
+
+    loop_count++;
   }
 }
