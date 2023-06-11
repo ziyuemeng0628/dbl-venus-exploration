@@ -235,7 +235,7 @@ boolean turncheck(int turncount){
 
 
 //changing direction and outputting turn left,right,180
-char algodirection(){
+char algodirection_0(){
 
   if(double_turn == 0){
     double_turn++;
@@ -347,16 +347,16 @@ char algo_0(){
       update_map('0','o',1);
     }
     
-    char turn_direct = algodirection();
+    char turn_direct = algodirection_0();
     // if(turn_direct != 'b'){
       turncount++;
     // }
 
     return turn_direct;
   }else if(object == 'r' || IR_rock_check == 1){
-    
+    loop_count = 0;
     Serial.print("\n\n\n\n-----------------------------\nRock Found!!!\nReturn to base sequence started!!!\n-----------------------------\n");
-    mode = 1;
+    mode = 2;
     movement('\0');
     print_map();
     return '\0';
@@ -371,8 +371,66 @@ char algo_0(){
   }
 }
 
+char algodirection_2(){
+  int x_s;
+  int y_s;
+  for(int i = 0; i<grid_size; i++){
+    for(int j = 0; j<grid_size; j++){
+      if(venusmap[i][j] == 's'){
+        x_s = j;
+        y_s = i;
+      }
+    }
+  }
+  
+  if(directionnow == 1 || directionnow == -1){
+    if(x-x_s > 0){
+      directionnow = -2;
+      if(directionnow == 1){
+        return 'r';
+      }else{
+        return 'l';
+      }
+      
+    }else if(x-x_s < 0){
+      directionnow = 2;
+      if(directionnow == 1){
+        return 'l';
+      }else{
+        return 'r';
+      }
+    }else{
+      Serial.print("algo 0 engaged\n");
+      return algodirection_0();
+    }
+  }else if(directionnow == 2 || directionnow == -2){
+    if(y-y_s > 0){
+      directionnow = 1;
+      if(directionnow == 2){
+        return 'r';
+      }else{
+        return 'l';
+      }
+    }else if(y-y_s < 0){
+      directionnow = -1;
+      if(directionnow == 2){
+        return 'l';
+      }else{
+        return 'r';
+      }
+    }else{
+      Serial.print("algo 0 engaged\n");
+      return algodirection_0();
+    }
+  }else{
+    return '\0';
+  }
+}
+
 char algo_2(){
   if(init_algo2 == true){
+    turncount = 0;
+    double_turn = 0;
     init_algo2 = false;
     directionnow=directionnow*-1;
     return 'b';
@@ -380,24 +438,27 @@ char algo_2(){
 
   char object = check_map('0',1);
 
-  if(object == 's'){    
-    double_turn=false;
+  if(object == 's'){   
     update_map('0','p',0);
     update_pos('0',1);
     
-    mode = 0;
+    Serial.print("\n\n\n\n-----------------------------\nStart Found!!!\nReturn to base sequence SUCESSFUL!!!\n-----------------------------\n");
+    mode = 1;
+    movement('\0');
+    print_map();
     
     return 'f';
   }else if(object == 'p'){ // go forward
-    double_turn=false;
+    double_turn = 0;
     update_map('0','p',0);
     update_map('0','x',1);
     update_pos('0',1);
     
     return 'f';
   }else{
-    char turn_direct = algodirection();
-    
+    char turn_direct = algodirection_2();
+    double_turn++;
+    turncount++;
     return turn_direct;
   }
 }
@@ -422,10 +483,10 @@ void loop() {
     // movement(algo_out);
 
     if(loop_count>75){
-        movement(algo_out);
-        print_map();
+      movement(algo_out);
+      print_map();
       
-      mode = 1;
+      mode = 3;
     }
 
     loop_count++;
