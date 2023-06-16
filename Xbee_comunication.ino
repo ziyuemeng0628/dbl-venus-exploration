@@ -1,9 +1,8 @@
 #define PAN_ID "4321"
 #define CHANNEL_ID "F"
-#define led_red 12
-#define led_green 12
-#define pin_master_out 11
-#define pin_master_in 10
+#define led_red 4
+#define led_green 5
+#define pin_master 6
 
 //variables for communication
 String str_message;
@@ -39,7 +38,7 @@ boolean xbee_init(int nr_sec) {
     
     if(receive_data(1000)){
       for(int i = 0 ; i<str_message.length() ; i++){
-        if(str_message[i] == '+' && xbee_master){
+        if(str_message[i] == '&' && xbee_master){
           first_check = true;
         }else{
           if(str_message[i] == 'x'){
@@ -49,17 +48,17 @@ boolean xbee_init(int nr_sec) {
       }
       
       if(first_check == true && xbee_master){
-        Serial.print("+++\n");
+        Serial.print("&&&\n");
         second_check = true;
       }
     }
   }
   
   for(int i = 0; i<nr_sec && second_check == false && first_check == true && xbee_master == false; i++){
-    Serial.print("+");
+    Serial.print("&");
     if(receive_data(1000)){
       for(int i = 0 ; i<str_message.length() ; i++){
-        if(str_message[i] == '+'){
+        if(str_message[i] == '&'){
           second_check = true;
         }
       }
@@ -76,27 +75,23 @@ boolean xbee_init(int nr_sec) {
     digitalWrite(led_red,LOW);
     return false;
   }else{
-    for(int i = 0 ; i<10 ; i++){
-      digitalWrite(led_green,HIGH);
-      delay(100);
-      digitalWrite(led_green,LOW);
-      delay(100);
-    }
+    digitalWrite(led_green,HIGH);
+    delay(5000);
+    digitalWrite(led_green,LOW);
     return true;
   }
 }
 
 void communication_setup() {
-  pinMode(pin_master_out,OUTPUT);
-  pinMode(pin_master_in,INPUT);
-  
-  digitalWrite(pin_master_out,HIGH);
-  if(digitalRead(pin_master_in)==HIGH){ // if you have sorted the two master pins then its the master
+  pinMode(pin_master,INPUT);
+  pinMode(7,OUTPUT);
+  digitalWrite(7,HIGH);
+  if(digitalRead(pin_master)==HIGH){ // if you have sorted the two master pins then its the master
     xbee_master = true;
   }
-  digitalWrite(pin_master_out,LOW);
+  digitalWrite(7,LOW);
   
-  xbee_connected = xbee_init_slave(30); // initializes communication between xbees
+  xbee_connected = xbee_init(30); // initializes communication between xbees
 }
 
 void send_data() {
@@ -111,7 +106,4 @@ void setup() {
   digitalWrite(led_green,LOW);
   
   communication_setup();
-}
-
-void loop() {
 }
